@@ -20,32 +20,57 @@ class ViewController: UIViewController {
     var tipPercentages:[Int] = [15, 30, 20]
     
     let SETTINGSKEY = "SETTINGSARRAYKEY"
+    let BILLAMOUNTKEY = "BILLAMOUNT"
+    let LASTSAVEDKEY = "LASTSAVED"
+    let LAUNCHEDBEFOREKEY = "LAUNCHEDBEFORE"
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         let defaults = UserDefaults.standard
       
-        let firstLaunch = defaults.bool(forKey: "FirstLaunch")
+        let launchedBefore = defaults.bool(forKey: LAUNCHEDBEFOREKEY)
         
-        // not first launch
-        if firstLaunch  {
+        if launchedBefore  {
             let retrievedArray = (defaults.object(forKey:SETTINGSKEY) as? [Int])!
             
             if retrievedArray.count == 3 {
                 tipPercentages = retrievedArray
             }
+
+            let lastSaveTime = (defaults.object(forKey: LASTSAVEDKEY)) as! Date
+            
+            let tenMinLater : Date = Date.init(timeInterval: 600, since: lastSaveTime)
+            
+            if Date.init().compare(tenMinLater) == .orderedSame ||
+                Date.init().compare(tenMinLater) == .orderedAscending {
+                self.billField.text = defaults.string(forKey: BILLAMOUNTKEY)!
+            }
+
+
         }
         else {
-//            First launch, setting NSUserDefault
-            defaults.set(true, forKey: "FirstLaunch")
+            defaults.set(true, forKey: LAUNCHEDBEFOREKEY)
             
         }
-        print("viewWillAppear, tipPercentages = \(tipPercentages)")
+        
         tipControl.setTitle(String(format: "%d%%", tipPercentages[0]), forSegmentAt: 0)
         tipControl.setTitle(String(format: "%d%%", tipPercentages[1]), forSegmentAt: 1)
         tipControl.setTitle(String(format: "%d%%", tipPercentages[2]), forSegmentAt: 2)
         
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        if billField.text != "" && billField.text != "0" {
+        
+            let defaults = UserDefaults.standard
+        
+            defaults.set(billField.text, forKey: BILLAMOUNTKEY)
+            defaults.set(Date.init(), forKey: LASTSAVEDKEY)
+            defaults.synchronize()
+        }
     }
     
     @IBAction func onTap(_ sender: AnyObject) {
@@ -54,7 +79,8 @@ class ViewController: UIViewController {
     }
  
     @IBAction func calculateTip(_ sender: AnyObject) {
-         let percent = Double(tipPercentages[tipControl.selectedSegmentIndex])/100.0
+        let percent = Double(tipPercentages[tipControl.selectedSegmentIndex])/100.0
+        
         
         let bill = Double(billField.text!) ?? 0
         let tip = Double(bill * percent)

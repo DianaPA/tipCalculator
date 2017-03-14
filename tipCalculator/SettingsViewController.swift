@@ -28,6 +28,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     
     let defaultSettings = [15, 30, 20]
     let SETTINGSKEY = "SETTINGSARRAYKEY"
+    let LAUNCHEDBEFOREKEY = "LAUNCHEDBEFORE"
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,10 +38,9 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         super.viewWillAppear(animated)
   
         let defaults = UserDefaults.standard
-        let firstLaunch = defaults.bool(forKey: "FirstLaunch")
+        let launchedBefore = defaults.bool(forKey: LAUNCHEDBEFOREKEY)
         
-        if firstLaunch  {
-//           Not first launch
+        if launchedBefore  {
              retrievedArray = (defaults.object(forKey:SETTINGSKEY) as? [Int])!
             
             if retrievedArray.count == 3 {
@@ -48,8 +48,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
             }
         }
         else {
-//            First launch, setting NSUserDefault
-            defaults.set(true, forKey: "FirstLaunch")
+            defaults.set(true, forKey: LAUNCHEDBEFOREKEY)
             
         }
         
